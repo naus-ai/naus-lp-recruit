@@ -15,6 +15,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/assets/booking/booking.css" />
+<script src="/assets/booking/booking.js" defer></script>
 <style>
   html, body { margin: 0; padding: 0; background: #06080b; }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -77,7 +79,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </button>
     <div style="display: flex; gap: 8px;">
       <a href="#form" id="open-mail-top" style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #33424f; color: #cdd8e2; font-weight: 700; font-size: 13px; padding: 13px 10px; border-radius: 2px;">メールで受け取る</a>
-      <a href="https://calendar.app.google/QHcVtt3HSc3vjNwj9" target="_blank" rel="noopener" style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #33424f; color: #cdd8e2; font-weight: 700; font-size: 13px; padding: 13px 10px; border-radius: 2px;">面談で聞く</a>
+      <a href="https://calendar.app.google/QHcVtt3HSc3vjNwj9" target="_blank" rel="noopener" data-cta-location="fv" style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #33424f; color: #cdd8e2; font-weight: 700; font-size: 13px; padding: 13px 10px; border-radius: 2px;">面談で聞く</a>
     </div>
     <p style="margin: 2px 0 0; font-size: 11px; color: #6b7a8a; line-height: 1.6;">「まだ転職するか迷っている」段階のご相談も歓迎です。</p>
   </div>
@@ -261,7 +263,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div style="display: flex; gap: 8px;">
           <button type="button" data-open-line style="flex: 1; border: 1px solid #2a3945; background: #0b1117; color: #a7b7c5; font-size: 14px; font-weight: 700; padding: 15px 0; border-radius: 2px; cursor: pointer;">LINE</button>
           <button type="button" id="pick-mail" style="flex:1;padding:15px 0;border:1px solid #2a3945;background:#0b1117;color:#a7b7c5;font-size:14px;font-weight:700;border-radius:2px;cursor:pointer;">メール</button>
-          <a href="https://calendar.app.google/QHcVtt3HSc3vjNwj9" target="_blank" rel="noopener" style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #2a3945; background: #0b1117; color: #a7b7c5; font-size: 14px; font-weight: 700; padding: 15px 0; border-radius: 2px;">面談</a>
+          <a href="https://calendar.app.google/QHcVtt3HSc3vjNwj9" target="_blank" rel="noopener" data-cta-location="entry" style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #2a3945; background: #0b1117; color: #a7b7c5; font-size: 14px; font-weight: 700; padding: 15px 0; border-radius: 2px;">面談</a>
         </div>
       </div>
       <form id="mail-form" name="recruit-entry" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" hidden style="display: grid; gap: 16px;">
