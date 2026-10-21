@@ -5,7 +5,7 @@
   --bk-head-bg:#070b0f;
   --bk-surface:#070b0f;
   --bk-line:#1e2b36;
-  --bk-line-strong:#2a3945;
+  --bk-line-strong:#4f6476;
   --bk-text:#e9eef3;
   --bk-muted:#98a9b8;
   --bk-faint:#4a5866;
@@ -136,6 +136,13 @@
 .bk-meet{display:block;margin:14px 0 0;padding-top:14px;border-top:1px solid var(--bk-when-line);font-size:17px;font-weight:700;line-height:1.7;color:var(--bk-text);overflow-wrap:anywhere;}
 .bk-meet a{color:var(--bk-accent);text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere;}
 .bk-text{margin:0 0 22px;font-size:14.5px;line-height:1.9;color:var(--bk-muted);}
+
+/* ダーク配色(/)だけの調整: 選べるマスを塗りつぶし、選べないマスを沈めて、メリハリを付ける */
+.bk-overlay:not(.bk-theme-rose) .bk-slot{background:#5ce1d6;border-color:#5ce1d6;color:#0a0d11;}
+.bk-overlay:not(.bk-theme-rose) .bk-slot:hover{background:#8af0e8;border-color:#8af0e8;color:#0a0d11;}
+.bk-overlay:not(.bk-theme-rose) .bk-cell{color:#36414c;}
+.bk-overlay:not(.bk-theme-rose) .bk-gh.is-off{color:#7d8d9c;}
+.bk-overlay:not(.bk-theme-rose) button:focus-visible,.bk-overlay:not(.bk-theme-rose) a:focus-visible{outline:2px solid #ffd24a;outline-offset:2px;}
 
 @media (max-width:640px){
   /* スマホ: PCと同じ週表示を、画面幅に収まるよう詰める */
