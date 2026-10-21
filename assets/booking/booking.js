@@ -17,6 +17,7 @@
   // 日時を選ぶ画面の上に出す説明文
   var INTRO=['未経験からでも挑戦可能なエンジニアの求人をご紹介いたします。','お話しできますこと楽しみにしております！'];
   var WD=['日','月','火','水','木','金','土'];
+  var NARROW=window.matchMedia('(max-width:640px)'); // 週表示のマス: 640px以下は○×、それより広いと時刻
   var JST=9*60*60*1000;
   var DAY=24*60*60*1000;
 
@@ -87,6 +88,7 @@
     overlay.addEventListener('click',function(e){if(e.target===overlay&&!st.sending)close();});
     document.body.appendChild(overlay);
     document.addEventListener('keydown',onKey);
+    NARROW.addEventListener&&NARROW.addEventListener('change',function(){if(st.open&&!st.selected&&st.slots.length)renderSelect();});
   }
 
   function onKey(e){
@@ -237,13 +239,16 @@
     nav.appendChild(prev);nav.appendChild(label);nav.appendChild(next);
     sec.appendChild(nav);
 
-    var grid=el('div','bk-grid');
+    var mark=NARROW.matches;
+    var grid=el('div','bk-grid'+(mark?' is-mark':''));
     grid.setAttribute('role','group');
     grid.setAttribute('aria-label',md(st.weekStart)+'〜'+md(fri)+'の空き時間');
     var cols=[],times={};
-    var corner=el('div','bk-gh bk-gt-head');
-    corner.setAttribute('aria-hidden','true');
-    grid.appendChild(corner);
+    if(mark){
+      var corner=el('div','bk-gh bk-gt-head');
+      corner.setAttribute('aria-hidden','true');
+      grid.appendChild(corner);
+    }
     for(var i=0;i<5;i++){
       var dms=st.weekStart+i*DAY;
       var ds=slotsOfDay(dayKey(dms));
@@ -263,24 +268,29 @@
       none.style.gridColumn='1/-1';
       grid.appendChild(none);
     }
-    // 行: 左端に時刻、各日のマスは ○(予約できる)/×(予約できない)
+    // 行: 640px以下は左端に時刻、各日のマスは ○(予約できる)/×(予約できない)。広い画面は各マスに時刻
     rows.forEach(function(t){
-      grid.appendChild(el('div','bk-gt',t));
+      if(mark)grid.appendChild(el('div','bk-gt',t));
       cols.forEach(function(c){
         var s=null;
         c.slots.forEach(function(x){if(hm(x.start)===t)s=x;});
         if(s){
-          var b=el('button','bk-slot','○');
+          var b=el('button','bk-slot',mark?'○':t);
           b.type='button';
           b.setAttribute('aria-label',slotLabel(s)+'を選ぶ');
           b.addEventListener('click',function(){pick(s,'calendar');});
           grid.appendChild(b);
         }else{
           var c2=el('div','bk-cell');
-          var mark=el('span',null,'×');
-          mark.setAttribute('aria-hidden','true');
-          c2.appendChild(mark);
-          c2.appendChild(el('span','bk-sr',md(c.ms)+' '+t+' 予約できません'));
+          if(mark){
+            var x=el('span',null,'×');
+            x.setAttribute('aria-hidden','true');
+            c2.appendChild(x);
+            c2.appendChild(el('span','bk-sr',md(c.ms)+' '+t+' 予約できません'));
+          }else{
+            c2.textContent='—';
+            c2.setAttribute('aria-hidden','true');
+          }
           grid.appendChild(c2);
         }
       });
