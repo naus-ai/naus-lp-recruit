@@ -142,6 +142,8 @@
 .bk-overlay:not(.bk-theme-rose) .bk-slot:hover{background:#8af0e8;border-color:#8af0e8;color:#0a0d11;}
 .bk-overlay:not(.bk-theme-rose) .bk-cell{color:#36414c;}
 .bk-overlay:not(.bk-theme-rose) .bk-gh.is-off{color:#7d8d9c;}
+.bk-overlay:not(.bk-theme-rose) .bk-early-btn{background:#16212b;}
+.bk-overlay:not(.bk-theme-rose) .bk-early-btn:hover{background:#1c2a36;}
 .bk-overlay:not(.bk-theme-rose) button:focus-visible,.bk-overlay:not(.bk-theme-rose) a:focus-visible{outline:2px solid #ffd24a;outline-offset:2px;}
 
 @media (max-width:640px){
