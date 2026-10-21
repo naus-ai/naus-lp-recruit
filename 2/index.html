@@ -78,7 +78,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <span style="font-size: 14px;">→</span>
     </a>
     <div style="display: flex; gap: 9px;">
-      <a href="#form" style="flex: 1; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 1px solid #ead6dc; color: #5a4a60; font-weight: 700; font-size: 13px; padding: 14px 10px; border-radius: 999px; text-decoration: none;">メールで受け取る</a>
+      <a href="#form" id="open-mail-top" style="flex: 1; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 1px solid #ead6dc; color: #5a4a60; font-weight: 700; font-size: 13px; padding: 14px 10px; border-radius: 999px; text-decoration: none;">メールで受け取る</a>
       <button type="button" data-open-line style="flex: 1; display: flex; align-items: center; justify-content: center; background: #ffffff; border: 1px solid #ead6dc; color: #5a4a60; font-weight: 700; font-size: 13px; padding: 14px 10px; border-radius: 999px; text-decoration: none; cursor: pointer;">LINEで受け取る</button>
     </div>
     <p style="margin: 4px 0 0; font-size: 11.5px; color: #85788a; line-height: 1.6; text-align: center;">「まだ転職するか迷っている」段階のご相談も歓迎です。</p>
@@ -375,10 +375,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   var MAIL_ON = 'flex:1;padding:15px 0;border:1px solid #c23c5a;background:#fde9ec;color:#c23c5a;font-size:14px;font-weight:700;border-radius:999px;cursor:pointer;';
   var pickMail = $('pick-mail');
   var mailForm = $('mail-form');
-  pickMail.addEventListener('click', function () {
+  var openMailForm = function () {
     pickMail.style.cssText = MAIL_ON;
     mailForm.hidden = false;
-  });
+  };
+  pickMail.addEventListener('click', openMailForm);
+  $('open-mail-top').addEventListener('click', openMailForm);
 
   /* 同意チェック */
   var BOX_ON = 'flex:none;width:22px;height:22px;display:flex;align-items:center;justify-content:center;border:1.5px solid #c23c5a;background:#c23c5a;color:#ffffff;font-size:13px;font-weight:700;border-radius:7px;';
