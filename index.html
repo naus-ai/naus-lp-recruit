@@ -23,6 +23,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   a { color: #5ce1d6; text-decoration: none; }
   a:hover { color: #8af0e8; }
   input, button, textarea { font-family: inherit; }
+  .fv-cta-sub { display: inline-block; }
+  @media (max-width: 383.98px) { .fv-cta-sub { display: block; font-size: 12px; margin-top: 2px; } }
   @keyframes scanline { 0% { transform: translateY(-100%); } 100% { transform: translateY(400%); } }
   @keyframes pulseDot { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
   @keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -73,13 +75,13 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
   <!-- ===== FV直下CTA ===== -->
   <div style="display: grid; gap: 8px; padding: 22px; background: #0a0e13; border-top: 1px solid #18222c; border-bottom: 1px solid #18222c;">
-    <button type="button" data-open-line style="display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; background: #ffd24a; color: #0a0d11; font-weight: 900; font-size: 15px; padding: 16px 18px; border-radius: 2px; cursor: pointer;">
-      <span>LINEで詳細を受け取る</span>
+    <a href="https://calendar.app.google/QHcVtt3HSc3vjNwj9" target="_blank" rel="noopener" data-cta-location="fv" style="display: flex; align-items: center; justify-content: space-between; width: 100%; border: 0; background: #ffd24a; color: #0a0d11; font-weight: 900; font-size: 15px; padding: 16px 18px; border-radius: 2px; cursor: pointer;">
+      <span class="fv-cta-label">応募条件を聞く<span class="fv-cta-sub">（オンライン/15〜30分）</span></span>
       <span style="font-family: 'JetBrains Mono', monospace; font-size: 13px;">→</span>
-    </button>
+    </a>
     <div style="display: flex; gap: 8px;">
       <a href="#form" id="open-mail-top" style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #33424f; color: #cdd8e2; font-weight: 700; font-size: 13px; padding: 13px 10px; border-radius: 2px;">メールで受け取る</a>
-      <a href="https://calendar.app.google/QHcVtt3HSc3vjNwj9" target="_blank" rel="noopener" data-cta-location="fv" style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #33424f; color: #cdd8e2; font-weight: 700; font-size: 13px; padding: 13px 10px; border-radius: 2px;">応募条件を聞く</a>
+      <button type="button" data-open-line style="flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid #33424f; background: transparent; color: #cdd8e2; font-weight: 700; font-size: 13px; padding: 13px 10px; border-radius: 2px; cursor: pointer;">LINEで詳細を受け取る</button>
     </div>
     <p style="margin: 2px 0 0; font-size: 11px; color: #6b7a8a; line-height: 1.6;">「まだ転職するか迷っている」段階のご相談も歓迎です。</p>
   </div>
