@@ -241,15 +241,15 @@
 
   function slotsOfDay(key){return st.slots.filter(function(s){return dayKey(s.start)===key;});}
 
-  // 5日分(月〜金)の週表示(PC・スマホ共通)
+  // 7日分(月〜日)の週表示(PC・スマホ共通)
   function renderWeek(sec){
     var firstWeek=monday(Date.now());
     var lastWeek=monday(st.slots[st.slots.length-1].start);
     var nav=el('div','bk-weeknav');
     var prev=el('button','bk-navbtn','‹ 前の週');prev.type='button';
     var next=el('button','bk-navbtn','次の週 ›');next.type='button';
-    var fri=st.weekStart+4*DAY;
-    var label=el('span','bk-weeklabel',md(st.weekStart)+' 〜 '+md(fri));
+    var sun=st.weekStart+6*DAY;
+    var label=el('span','bk-weeklabel',md(st.weekStart)+' 〜 '+md(sun));
     prev.disabled=st.weekStart<=firstWeek;
     next.disabled=st.weekStart>=lastWeek;
     prev.addEventListener('click',function(){st.weekStart-=7*DAY;renderSelect();});
@@ -260,14 +260,14 @@
     var mark=NARROW.matches;
     var grid=el('div','bk-grid'+(mark?' is-mark':''));
     grid.setAttribute('role','group');
-    grid.setAttribute('aria-label',md(st.weekStart)+'〜'+md(fri)+'の空き時間');
+    grid.setAttribute('aria-label',md(st.weekStart)+'〜'+md(sun)+'の空き時間');
     var cols=[],times={};
     if(mark){
       var corner=el('div','bk-gh bk-gt-head');
       corner.setAttribute('aria-hidden','true');
       grid.appendChild(corner);
     }
-    for(var i=0;i<5;i++){
+    for(var i=0;i<7;i++){
       var dms=st.weekStart+i*DAY;
       var ds=slotsOfDay(dayKey(dms));
       cols.push({ms:dms,slots:ds});

@@ -56,16 +56,17 @@ export function queryRange(now, cfg = BOOKING) {
 export function computeSlots({ now, busy = [], holidays = new Set(), cfg = BOOKING }) {
   const out = [];
   const first = jstMidnight(now, cfg);
-  const open = hm(cfg.dayStart);
-  const close = hm(cfg.dayEnd);
   const buffer = cfg.bufferMinutes * MIN;
   const deadline = now + cfg.minLeadHours * 60 * MIN; // これより前に始まる枠は締め切り済み
 
   for (let i = 0; i <= cfg.maxDaysAhead; i++) {
     const midnight = first + i * DAY;
     const p = jstDate(midnight, cfg);
-    if (!cfg.weekdays.includes(p.dow)) continue;
-    if (holidays.has(dayKey(midnight, cfg))) continue;
+    // 平日は weekdayHours、土日と祝日は offdayHours の時間帯を使う
+    const isOffday = !cfg.weekdays.includes(p.dow) || holidays.has(dayKey(midnight, cfg));
+    const hours = isOffday ? cfg.offdayHours : cfg.weekdayHours;
+    const open = hm(hours.start);
+    const close = hm(hours.end);
 
     for (let t = open; t + cfg.slotMinutes <= close; t += cfg.stepMinutes) {
       const start = midnight + t * MIN;

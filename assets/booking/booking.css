@@ -91,7 +91,7 @@
 .bk-navbtn{padding:8px 14px;border-radius:var(--bk-radius-btn);border:1px solid var(--bk-line-strong);background:var(--bk-surface);color:var(--bk-text);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;}
 .bk-navbtn:hover:not(:disabled){border-color:var(--bk-accent);}
 .bk-navbtn:disabled{opacity:.35;cursor:default;}
-.bk-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--bk-surface);border:1px solid var(--bk-line);border-radius:var(--bk-radius);padding:10px;}
+.bk-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;background:var(--bk-surface);border:1px solid var(--bk-line);border-radius:var(--bk-radius);padding:10px;}
 .bk-gh{padding:6px 0 8px;text-align:center;font-size:13px;font-weight:700;color:var(--bk-text);border-bottom:1px solid var(--bk-line);margin-bottom:2px;}
 .bk-gh.is-off{color:var(--bk-faint);}
 .bk-cell{height:34px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--bk-faint);}
@@ -99,7 +99,7 @@
 .bk-slot:hover{background:var(--bk-slot-hover-bg);border-color:var(--bk-slot-hover-bg);color:var(--bk-slot-hover-text);}
 .bk-gt{display:flex;align-items:center;justify-content:flex-end;padding:0 6px 0 2px;font-size:12.5px;font-weight:700;white-space:nowrap;}
 .bk-gt-head{padding:0;}
-.bk-grid.is-mark{grid-template-columns:auto repeat(5,minmax(0,1fr));}
+.bk-grid.is-mark{grid-template-columns:auto repeat(7,minmax(0,1fr));}
 .bk-grid.is-mark .bk-slot{font-size:16px;}
 .bk-cell span[aria-hidden]{font-size:14px;}
 .bk-cell{position:relative;}
@@ -172,3 +172,10 @@
   .bk-meet{font-size:15.5px;}
 }
 @media (prefers-reduced-motion:reduce){.bk-dialog{animation:none;}}
+
+/* 320px前後: 7列に増えた週表示の日付見出しが重ならないよう、さらに詰める */
+@media (max-width:360px){
+  .bk-grid{gap:2px;padding:4px;}
+  .bk-gh{font-size:9.5px;letter-spacing:-.02em;}
+  .bk-gt{padding:0 2px 0 0;font-size:10px;}
+}
