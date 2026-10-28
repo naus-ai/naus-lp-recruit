@@ -1,9 +1,10 @@
 /*
- * 面談の予約画面(/ と /2/ で共通)
+ * 面談の予約画面(/ と /2/ と /booking/ で共通)
  * - ページ内の外部予約リンク(calendar.app.google)を押すと、外部に飛ばずにこの予約画面を開く
  *   (リンク自体は残してあるので、このファイルが読み込めない場合は従来どおり外部の予約ページが開く)
  * - 空き枠は /api/booking/slots、予約は /api/booking/create(Netlify Functions)を使う
  * - 予約APIが使えないときは、押されたリンクの外部予約ページを案内する
+ * - ページに #booking-inline の置き場所がある場合(/booking/)は、重ねて開く画面ではなく、その場所に最初から表示する
  * 入力値は、このタブ内の保存領域(sessionStorage)に置く。URLには載せない
  */
 (function(){
@@ -12,7 +13,8 @@
   var EARLIEST_COUNT=3; // 上部「最短の候補」に出す件数
   var STORE_KEY='naus_recruit_lead';
   var EXTERNAL=/^https:\/\/calendar\.app\.google\//;
-  var SOURCE=/^\/2(\/|$)/.test(location.pathname)?'recruit_2':'recruit_1';
+  var SOURCE=/^\/2(\/|$)/.test(location.pathname)?'recruit_2':/^\/booking(\/|$)/.test(location.pathname)?'recruit_line':'recruit_1';
+  var INLINE=document.getElementById('booking-inline'); // ページに直接表示する場合の置き場所(無ければ重ねて開く画面)
   var TITLE='未経験エンジニア求人紹介(30分・オンライン)のご予約';
   // 日時を選ぶ画面の上に出す説明文
   var INTRO=['未経験からでも挑戦可能なエンジニアの求人をご紹介いたします。','お話しできますこと楽しみにしております！'];
@@ -65,11 +67,11 @@
 
   // ---- 画面の骨組み ----
   function build(){
-    overlay=el('div','bk-overlay'+(SOURCE==='recruit_2'?' bk-theme-rose':''));
+    overlay=el('div','bk-overlay'+(SOURCE==='recruit_2'?' bk-theme-rose':'')+(INLINE?' bk-inline':''));
     overlay.hidden=true;
     dialog=el('div','bk-dialog');
-    dialog.setAttribute('role','dialog');
-    dialog.setAttribute('aria-modal','true');
+    dialog.setAttribute('role',INLINE?'region':'dialog');
+    if(!INLINE)dialog.setAttribute('aria-modal','true');
     dialog.setAttribute('aria-labelledby','bk-title');
     dialog.tabIndex=-1;
     var head=el('div','bk-head');
@@ -80,14 +82,18 @@
     x.setAttribute('aria-label','閉じる');
     x.addEventListener('click',close);
     head.appendChild(title);
-    head.appendChild(x);
+    if(!INLINE)head.appendChild(x); // ページに直接表示する場合は閉じるボタンを出さない
     body=el('div','bk-body');
     dialog.appendChild(head);
     dialog.appendChild(body);
     overlay.appendChild(dialog);
-    overlay.addEventListener('click',function(e){if(e.target===overlay&&!st.sending)close();});
-    document.body.appendChild(overlay);
-    document.addEventListener('keydown',onKey);
+    if(INLINE){
+      INLINE.appendChild(overlay);
+    }else{
+      overlay.addEventListener('click',function(e){if(e.target===overlay&&!st.sending)close();});
+      document.body.appendChild(overlay);
+      document.addEventListener('keydown',onKey);
+    }
     NARROW.addEventListener&&NARROW.addEventListener('change',function(){if(st.open&&!st.selected&&st.slots.length)renderSelect();});
   }
 
@@ -107,18 +113,26 @@
     if(!overlay)build();
     st.fallback=fallback||'';
     st.selected=null;st.from='';st.editing=false;st.notice='';st.sending=false;
-    lastFocus=document.activeElement;
-    prevOverflow=document.body.style.overflow;
-    document.body.style.overflow='hidden';
     overlay.hidden=false;
     st.open=true;
-    dialog.focus();
-    track('booking_ui_open',{open_source:source==='hash'?'hash':'click'});
+    if(!INLINE){
+      lastFocus=document.activeElement;
+      prevOverflow=document.body.style.overflow;
+      document.body.style.overflow='hidden';
+      dialog.focus();
+    }
+    track('booking_ui_open',{open_source:source==='hash'||source==='page'?source:'click'});
     loadSlots();
   }
   // 画面が切り替わったら先頭に戻す
-  function toTop(){body.scrollTop=0;}
+  // (ページに直接表示する場合は、予約画面の先頭が画面より上に隠れているときだけ、そこまで戻す)
+  function toTop(){
+    if(!INLINE){body.scrollTop=0;return;}
+    var r=dialog.getBoundingClientRect();
+    if(r.top<0)window.scrollTo(0,(window.pageYOffset||document.documentElement.scrollTop)+r.top);
+  }
   function close(){
+    if(INLINE)return; // ページに直接表示する場合は閉じない
     if(!st.open||st.sending)return; // 予約の送信中は閉じない(結果を必ず表示する)
     st.open=false;
     overlay.hidden=true;
@@ -465,10 +479,12 @@
     box.appendChild(msg);
     // 招待メールの表示についての補足(受け取る側の設定で「差出人不明」と出ることがある)
     box.appendChild(el('p','bk-text','招待メールに「差出人不明」と表示される場合があります。メール内の「はい」を押すと、カレンダーに追加されます。'));
-    var c=el('button','bk-primary','閉じる');
-    c.type='button';
-    c.addEventListener('click',close);
-    box.appendChild(c);
+    if(!INLINE){
+      var c=el('button','bk-primary','閉じる');
+      c.type='button';
+      c.addEventListener('click',close);
+      box.appendChild(c);
+    }
     body.appendChild(box);
     toTop();
   }
@@ -488,7 +504,10 @@
   });
 
   // URLの末尾が #booking のときだけ、読み込み後に予約画面を開く(#booking 以外のURLの値は読まない)
-  if(location.hash==='#booking'){
+  // ページに置き場所があるときは、読み込み後すぐに予約画面を表示する
+  if(INLINE){
+    open(INLINE.getAttribute('data-fallback')||'','page');
+  }else if(location.hash==='#booking'){
     var src=document.querySelector('a[href^="https://calendar.app.google/"]');
     open(src?src.getAttribute('href'):'','hash');
   }
