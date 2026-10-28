@@ -91,6 +91,10 @@
   #booking-inline .bk-early-btn:hover { background: #e2ebf7; border-color: var(--navy); }
   #booking-inline .bk-slot { background: var(--navy); border-color: var(--navy); color: #ffffff; }
   #booking-inline .bk-slot:hover { background: var(--navy-deep); border-color: var(--navy-deep); color: #ffffff; }
+  /* スマホ幅の○×表示: 予約できるマスは薄い水色の角丸四角に紺の○(狭い列でも形が崩れないよう角丸は小さめ) */
+  #booking-inline .bk-grid.is-mark .bk-slot { background: #e3eefa; border-color: #c7daf1; color: var(--navy); border-radius: 8px; }
+  #booking-inline .bk-grid.is-mark .bk-slot:hover { background: #cfe0f5; border-color: var(--navy); color: var(--navy-deep); }
+  #booking-inline .bk-grid.is-mark .bk-slot:active { background: var(--navy); border-color: var(--navy); color: #ffffff; }
   #booking-inline .bk-cell { color: #c3c9d2; }
   #booking-inline .bk-gh.is-off { color: #a3abb7; }
   #booking-inline .bk-gt { color: var(--ink-soft); }
