@@ -478,7 +478,10 @@
     msg.appendChild(document.createTextNode('当日は招待メールのGoogle Meetからご参加ください。'));
     box.appendChild(msg);
     // 招待メールの表示についての補足(受け取る側の設定で「差出人不明」と出ることがある)
-    box.appendChild(el('p','bk-text','招待メールに「差出人不明」と表示される場合があります。メール内の「はい」を押すと、カレンダーに追加されます。'));
+    var note=el('p','bk-text','招待メールに「差出人不明」と表示される場合があります。');
+    note.appendChild(document.createElement('br'));
+    note.appendChild(document.createTextNode('メール内の「はい」を押すと、カレンダーに追加されます。'));
+    box.appendChild(note);
     if(!INLINE){
       var c=el('button','bk-primary','閉じる');
       c.type='button';
