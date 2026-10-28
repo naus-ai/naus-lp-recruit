@@ -103,7 +103,7 @@
     }
   }
 
-  function open(fallback){
+  function open(fallback,source){
     if(!overlay)build();
     st.fallback=fallback||'';
     st.selected=null;st.from='';st.editing=false;st.notice='';st.sending=false;
@@ -113,7 +113,7 @@
     overlay.hidden=false;
     st.open=true;
     dialog.focus();
-    track('booking_ui_open',{open_source:'click'});
+    track('booking_ui_open',{open_source:source==='hash'?'hash':'click'});
     loadSlots();
   }
   // 画面が切り替わったら先頭に戻す
@@ -123,6 +123,10 @@
     st.open=false;
     overlay.hidden=true;
     document.body.style.overflow=prevOverflow;
+    // URLの末尾の #booking で開いた場合は、閉じたらURLから #booking を外す(再読み込みで再び開かないように)
+    if(location.hash==='#booking'&&history.replaceState){
+      try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}
+    }
     if(lastFocus&&lastFocus.focus)lastFocus.focus();
   }
 
@@ -482,4 +486,10 @@
     track('cta_click',p);
     open(a.href);
   });
+
+  // URLの末尾が #booking のときだけ、読み込み後に予約画面を開く(#booking 以外のURLの値は読まない)
+  if(location.hash==='#booking'){
+    var src=document.querySelector('a[href^="https://calendar.app.google/"]');
+    open(src?src.getAttribute('href'):'','hash');
+  }
 })();
