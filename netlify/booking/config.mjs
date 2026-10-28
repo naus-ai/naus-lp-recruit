@@ -22,4 +22,5 @@ export const TITLE = '未経験エンジニア求人紹介（30分）/naus {last
 export const SOURCES = {
   recruit_1: '',
   recruit_2: '※メモ：LP2',
+  recruit_line: '※メモ：LINE',
 };
