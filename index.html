@@ -328,6 +328,17 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </div>
 
+<!-- 予約完了の通知フォーム(画面には出さない。送信は /assets/booking/booking.js から行う) -->
+<form name="booking-notify" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="hidden" name="form-name" value="booking-notify" />
+  <input name="bot-field" />
+  <input name="datetime" />
+  <input name="name" />
+  <input name="email" />
+  <input name="source" />
+  <input name="meet_url" />
+</form>
+
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };

@@ -419,7 +419,7 @@
       .then(function(res){
         st.sending=false;
         if(!st.open)return;
-        if(res.status===200&&res.body.ok){track('booking_complete',{slot_source:st.from});renderDone(res.body,data.email);return;}
+        if(res.status===200&&res.body.ok){track('booking_complete',{slot_source:st.from});renderDone(res.body,data.email);notifyForm(res.body,data);return;}
         if(res.status===409||(res.status===400&&res.body.fields&&res.body.fields.start)){
           track('booking_error',{error_type:'slot_unavailable'});
           st.notice='この枠は選択できなくなりました。お手数ですが、別の日時をお選びください。';
@@ -451,6 +451,25 @@
         renderFallback();
       })
       .catch(function(){st.sending=false;if(st.open)renderFallback('network');});
+  }
+
+  // ---- 予約完了の通知(Netlifyのフォーム booking-notify に1件送る) ----
+  // 結果は待たず、失敗しても何もしない(完了画面と予約には影響させない)
+  var NOTIFY_FORM='booking-notify';
+  var SOURCE_LABEL={recruit_1:'通常版',recruit_2:'LP2',recruit_line:'LINE',recruit_bizreach:'ビズリーチ'};
+  function hhmm(ms){var p=jst(ms);return pad(p.h)+':'+pad(p.mi);}
+  function notifyForm(res,data){
+    try{
+      var s=Date.parse(res.start),e=Date.parse(res.end),p=jst(s);
+      var f=new URLSearchParams();
+      f.append('form-name',NOTIFY_FORM);
+      f.append('datetime',p.y+'年'+p.m+'月'+p.d+'日('+WD[p.w]+') '+hhmm(s)+'〜'+hhmm(e));
+      f.append('name',data.last+' '+data.first);
+      f.append('email',data.email);
+      f.append('source',SOURCE_LABEL[SOURCE]||'');
+      f.append('meet_url',res.meetUrl||'');
+      fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:f.toString()}).catch(function(){});
+    }catch(err){}
   }
 
   function renderDone(res,email){
