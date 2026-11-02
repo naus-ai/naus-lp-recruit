@@ -1,4 +1,4 @@
-// Googleカレンダーとの通信(認証・空き状況・祝日・予定の作成)
+// Googleとの通信(認証・空き状況・祝日・予定の作成・予約の通知メール)
 // 認証情報はNetlifyの環境変数から読む。コードには一切書かない
 import { BOOKING } from './config.mjs';
 
@@ -41,8 +41,8 @@ export function readEnv(env = process.env) {
   };
 }
 
-// 予定の参加者に追加するアドレス(環境変数 BOOKING_NOTIFY_EMAILS。カンマ区切りで複数可)
-// 形式が正しくないものは無視する。未設定・空なら何も追加しない
+// 予約の通知メールを送るアドレス(環境変数 BOOKING_NOTIFY_EMAILS。カンマ区切りで複数可)
+// 形式が正しくないものは無視する。未設定・空なら通知メールは送らない
 const EMAIL = /^[^\s@<>()"',;:\\]+@[^\s@<>()"',;:\\]+\.[^\s@<>()"',;:\\]{2,}$/;
 
 export function parseEmails(v) {
@@ -159,25 +159,12 @@ export async function listEvents(e, startMs, endMs) {
 }
 
 // 予定を作る(Google Meetを自動発行し、参加者に招待メールを送る)
-// BOOKING_NOTIFY_EMAILS のアドレスも参加者に加える(すでに参加者にいるアドレスは重ねて加えない)
 export async function insertEvent(e, event) {
   return call(e, `/calendars/${encodeURIComponent(e.calendarId)}/events`, {
     method: 'POST',
     query: { conferenceDataVersion: 1, sendUpdates: 'all' },
-    body: withNotifyAttendees(event, e.notifyEmails),
+    body: event,
   });
-}
-
-export function withNotifyAttendees(event, emails) {
-  const list = Array.isArray(emails) ? emails : [];
-  if (!list.length) return event;
-  const attendees = (event.attendees || []).slice();
-  for (const email of list) {
-    const lower = email.toLowerCase();
-    if (attendees.some((a) => String(a.email || '').toLowerCase() === lower)) continue;
-    attendees.push({ email });
-  }
-  return { ...event, attendees };
 }
 
 export async function getEvent(e, id) {
@@ -197,4 +184,68 @@ export function meetUrl(ev) {
   if (ev.hangoutLink) return ev.hangoutLink;
   const ep = ev.conferenceData && (ev.conferenceData.entryPoints || []).find((p) => p.entryPointType === 'video');
   return ep ? ep.uri : '';
+}
+
+// ---- 予約の通知メール(Gmail API。予約を受けるアカウント自身から送る) ----
+// 合鍵(GOOGLE_REFRESH_TOKEN)に gmail.send の許可が含まれていないと、Googleが403を返して送れない
+const GMAIL_SEND = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send';
+
+// 日本語の件名を、メールの決まりに沿った形(=?UTF-8?B?…?=)に変換する
+// 1かたまりが長くなりすぎないよう、文字の途中で切らずに区切って並べる
+function encodeSubject(s) {
+  const words = [];
+  let chunk = '';
+  for (const ch of s) {
+    if (Buffer.byteLength(chunk + ch, 'utf8') > 45) {
+      words.push(chunk);
+      chunk = '';
+    }
+    chunk += ch;
+  }
+  if (chunk) words.push(chunk);
+  return words.map((w) => `=?UTF-8?B?${Buffer.from(w, 'utf8').toString('base64')}?=`).join('\r\n ');
+}
+
+// 送信するメールの中身(宛先・件名・本文)を、Gmail APIに渡す形に組み立てる
+export function buildRawMail({ to, subject, text }) {
+  const body = Buffer.from(text.replace(/\r?\n/g, '\r\n'), 'utf8').toString('base64').replace(/.{76}/g, '$&\r\n');
+  const mime = [
+    `To: ${to.join(', ')}`,
+    `Subject: ${encodeSubject(subject)}`,
+    'MIME-Version: 1.0',
+    'Content-Type: text/plain; charset=UTF-8',
+    'Content-Transfer-Encoding: base64',
+    '',
+    body,
+  ].join('\r\n');
+  return Buffer.from(mime, 'utf8').toString('base64url');
+}
+
+// メールを送る。timeoutMs を過ぎたら打ち切ってエラーにする
+export async function sendMail(e, mail, timeoutMs = 4000) {
+  const ctrl = new AbortController();
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      ctrl.abort();
+      reject(new GoogleError('gmail send', 504, 'timeout'));
+    }, timeoutMs);
+  });
+  const run = (async () => {
+    const token = await accessToken(e);
+    const res = await fetch(GMAIL_SEND, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ raw: buildRawMail(mail) }),
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new GoogleError('gmail send', res.status, await errorReason(res));
+    return true;
+  })();
+  try {
+    return await Promise.race([run, timeout]);
+  } finally {
+    clearTimeout(timer);
+    run.catch(() => {}); // 打ち切った後に届いたエラーは無視する
+  }
 }
