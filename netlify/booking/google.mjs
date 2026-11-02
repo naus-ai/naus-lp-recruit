@@ -37,7 +37,24 @@ export function readEnv(env = process.env) {
     clientSecret: env.GOOGLE_CLIENT_SECRET || '',
     refreshToken: env.GOOGLE_REFRESH_TOKEN || '',
     calendarId: env.BOOKING_CALENDAR_ID || '',
+    notifyEmails: parseEmails(env.BOOKING_NOTIFY_EMAILS),
   };
+}
+
+// 予定の参加者に追加するアドレス(環境変数 BOOKING_NOTIFY_EMAILS。カンマ区切りで複数可)
+// 形式が正しくないものは無視する。未設定・空なら何も追加しない
+const EMAIL = /^[^\s@<>()"',;:\\]+@[^\s@<>()"',;:\\]+\.[^\s@<>()"',;:\\]{2,}$/;
+
+export function parseEmails(v) {
+  if (typeof v !== 'string') return [];
+  const out = [];
+  for (const raw of v.split(',')) {
+    const s = raw.trim();
+    if (s.length > 254 || !EMAIL.test(s)) continue;
+    if (out.some((x) => x.toLowerCase() === s.toLowerCase())) continue;
+    out.push(s);
+  }
+  return out;
 }
 
 export function hasCredentials(e) {
@@ -142,12 +159,25 @@ export async function listEvents(e, startMs, endMs) {
 }
 
 // 予定を作る(Google Meetを自動発行し、参加者に招待メールを送る)
+// BOOKING_NOTIFY_EMAILS のアドレスも参加者に加える(すでに参加者にいるアドレスは重ねて加えない)
 export async function insertEvent(e, event) {
   return call(e, `/calendars/${encodeURIComponent(e.calendarId)}/events`, {
     method: 'POST',
     query: { conferenceDataVersion: 1, sendUpdates: 'all' },
-    body: event,
+    body: withNotifyAttendees(event, e.notifyEmails),
   });
+}
+
+export function withNotifyAttendees(event, emails) {
+  const list = Array.isArray(emails) ? emails : [];
+  if (!list.length) return event;
+  const attendees = (event.attendees || []).slice();
+  for (const email of list) {
+    const lower = email.toLowerCase();
+    if (attendees.some((a) => String(a.email || '').toLowerCase() === lower)) continue;
+    attendees.push({ email });
+  }
+  return { ...event, attendees };
 }
 
 export async function getEvent(e, id) {
