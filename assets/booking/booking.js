@@ -216,6 +216,7 @@
     var intro=el('p','bk-intro');
     INTRO.forEach(function(t,i){if(i)intro.appendChild(document.createElement('br'));intro.appendChild(document.createTextNode(t));});
     body.appendChild(intro);
+    if(SOURCE==='recruit_bizreach')body.appendChild(el('p','bk-intro','どなたのご予約か確認するため、ご予約のあとビズリーチのメッセージで一言ご連絡をお願いいたします。'));
     // 上部: 最短の候補(EARLIEST_COUNT件)
     var sec1=el('section','bk-sec');
     sec1.appendChild(el('h3','bk-sec-title','最短の候補'));
@@ -473,6 +474,7 @@
       when.appendChild(el('span','bk-meet','Google MeetのURLは、招待メールでお知らせします。'));
     }
     box.appendChild(when);
+    if(SOURCE==='recruit_bizreach')box.appendChild(el('p','bk-text','最後に、ビズリーチのメッセージで「予約しました」と一言ご返信ください。お手数をおかけいたします。'));
     var msg=el('p','bk-text',email+' 宛てに、Googleカレンダーの招待メールをお送りしました。');
     msg.appendChild(document.createElement('br'));
     msg.appendChild(document.createTextNode('当日は招待メールのGoogle Meetからご参加ください。'));
