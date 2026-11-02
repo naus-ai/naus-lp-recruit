@@ -25,4 +25,5 @@ export const SOURCES = {
   recruit_1: '',
   recruit_2: '※メモ：LP2',
   recruit_line: '※メモ：LINE',
+  recruit_bizreach: '※メモ：ビズリーチ',
 };

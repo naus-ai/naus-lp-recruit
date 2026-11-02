@@ -1,10 +1,10 @@
 /*
- * 面談の予約画面(/ と /2/ と /booking/ で共通)
+ * 面談の予約画面(/ と /2/ と /booking/ と /bizreach/ で共通)
  * - ページ内の外部予約リンク(calendar.app.google)を押すと、外部に飛ばずにこの予約画面を開く
  *   (リンク自体は残してあるので、このファイルが読み込めない場合は従来どおり外部の予約ページが開く)
  * - 空き枠は /api/booking/slots、予約は /api/booking/create(Netlify Functions)を使う
  * - 予約APIが使えないときは、押されたリンクの外部予約ページを案内する
- * - ページに #booking-inline の置き場所がある場合(/booking/)は、重ねて開く画面ではなく、その場所に最初から表示する
+ * - ページに #booking-inline の置き場所がある場合(/booking/ と /bizreach/)は、重ねて開く画面ではなく、その場所に最初から表示する
  * 入力値は、このタブ内の保存領域(sessionStorage)に置く。URLには載せない
  */
 (function(){
@@ -13,7 +13,7 @@
   var EARLIEST_COUNT=3; // 上部「最短の候補」に出す件数
   var STORE_KEY='naus_recruit_lead';
   var EXTERNAL=/^https:\/\/calendar\.app\.google\//;
-  var SOURCE=/^\/2(\/|$)/.test(location.pathname)?'recruit_2':/^\/booking(\/|$)/.test(location.pathname)?'recruit_line':'recruit_1';
+  var SOURCE=/^\/2(\/|$)/.test(location.pathname)?'recruit_2':/^\/booking(\/|$)/.test(location.pathname)?'recruit_line':/^\/bizreach(\/|$)/.test(location.pathname)?'recruit_bizreach':'recruit_1';
   var INLINE=document.getElementById('booking-inline'); // ページに直接表示する場合の置き場所(無ければ重ねて開く画面)
   var TITLE='未経験エンジニア求人紹介(30分・オンライン)のご予約';
   // 日時を選ぶ画面の上に出す説明文
