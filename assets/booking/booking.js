@@ -463,6 +463,7 @@
       var s=Date.parse(res.start),e=Date.parse(res.end),p=jst(s);
       var f=new URLSearchParams();
       f.append('form-name',NOTIFY_FORM);
+      f.append('bot-field','');// ふるい落とし用の欄。AJAX送信では空のまま本文に含めないと受け付けられない
       f.append('datetime',p.y+'年'+p.m+'月'+p.d+'日('+WD[p.w]+') '+hhmm(s)+'〜'+hhmm(e));
       f.append('name',data.last+' '+data.first);
       f.append('email',data.email);
