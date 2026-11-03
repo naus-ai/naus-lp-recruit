@@ -1,4 +1,4 @@
-// Googleとの通信(認証・空き状況・祝日・予定の作成・予約の通知メール)
+// Googleカレンダーとの通信(認証・空き状況・祝日・予定の作成)
 // 認証情報はNetlifyの環境変数から読む。コードには一切書かない
 import { BOOKING } from './config.mjs';
 
@@ -37,24 +37,7 @@ export function readEnv(env = process.env) {
     clientSecret: env.GOOGLE_CLIENT_SECRET || '',
     refreshToken: env.GOOGLE_REFRESH_TOKEN || '',
     calendarId: env.BOOKING_CALENDAR_ID || '',
-    notifyEmails: parseEmails(env.BOOKING_NOTIFY_EMAILS),
   };
-}
-
-// 予約の通知メールを送るアドレス(環境変数 BOOKING_NOTIFY_EMAILS。カンマ区切りで複数可)
-// 形式が正しくないものは無視する。未設定・空なら通知メールは送らない
-const EMAIL = /^[^\s@<>()"',;:\\]+@[^\s@<>()"',;:\\]+\.[^\s@<>()"',;:\\]{2,}$/;
-
-export function parseEmails(v) {
-  if (typeof v !== 'string') return [];
-  const out = [];
-  for (const raw of v.split(',')) {
-    const s = raw.trim();
-    if (s.length > 254 || !EMAIL.test(s)) continue;
-    if (out.some((x) => x.toLowerCase() === s.toLowerCase())) continue;
-    out.push(s);
-  }
-  return out;
 }
 
 export function hasCredentials(e) {
@@ -184,68 +167,4 @@ export function meetUrl(ev) {
   if (ev.hangoutLink) return ev.hangoutLink;
   const ep = ev.conferenceData && (ev.conferenceData.entryPoints || []).find((p) => p.entryPointType === 'video');
   return ep ? ep.uri : '';
-}
-
-// ---- 予約の通知メール(Gmail API。予約を受けるアカウント自身から送る) ----
-// 合鍵(GOOGLE_REFRESH_TOKEN)に gmail.send の許可が含まれていないと、Googleが403を返して送れない
-const GMAIL_SEND = 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send';
-
-// 日本語の件名を、メールの決まりに沿った形(=?UTF-8?B?…?=)に変換する
-// 1かたまりが長くなりすぎないよう、文字の途中で切らずに区切って並べる
-function encodeSubject(s) {
-  const words = [];
-  let chunk = '';
-  for (const ch of s) {
-    if (Buffer.byteLength(chunk + ch, 'utf8') > 45) {
-      words.push(chunk);
-      chunk = '';
-    }
-    chunk += ch;
-  }
-  if (chunk) words.push(chunk);
-  return words.map((w) => `=?UTF-8?B?${Buffer.from(w, 'utf8').toString('base64')}?=`).join('\r\n ');
-}
-
-// 送信するメールの中身(宛先・件名・本文)を、Gmail APIに渡す形に組み立てる
-export function buildRawMail({ to, subject, text }) {
-  const body = Buffer.from(text.replace(/\r?\n/g, '\r\n'), 'utf8').toString('base64').replace(/.{76}/g, '$&\r\n');
-  const mime = [
-    `To: ${to.join(', ')}`,
-    `Subject: ${encodeSubject(subject)}`,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: base64',
-    '',
-    body,
-  ].join('\r\n');
-  return Buffer.from(mime, 'utf8').toString('base64url');
-}
-
-// メールを送る。timeoutMs を過ぎたら打ち切ってエラーにする
-export async function sendMail(e, mail, timeoutMs = 4000) {
-  const ctrl = new AbortController();
-  let timer;
-  const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => {
-      ctrl.abort();
-      reject(new GoogleError('gmail send', 504, 'timeout'));
-    }, timeoutMs);
-  });
-  const run = (async () => {
-    const token = await accessToken(e);
-    const res = await fetch(GMAIL_SEND, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ raw: buildRawMail(mail) }),
-      signal: ctrl.signal,
-    });
-    if (!res.ok) throw new GoogleError('gmail send', res.status, await errorReason(res));
-    return true;
-  })();
-  try {
-    return await Promise.race([run, timeout]);
-  } finally {
-    clearTimeout(timer);
-    run.catch(() => {}); // 打ち切った後に届いたエラーは無視する
-  }
 }

@@ -7,8 +7,7 @@ import {
 } from '../booking/common.mjs';
 import { TITLE, SOURCES } from '../booking/config.mjs';
 import { toIso } from '../booking/slots.mjs';
-import { insertEvent, listEvents, deleteEvent, getEvent, meetUrl, sendMail } from '../booking/google.mjs';
-import { buildNotifyMail } from '../booking/notify.mjs';
+import { insertEvent, listEvents, deleteEvent, getEvent, meetUrl } from '../booking/google.mjs';
 
 const MIN = 60 * 1000;
 
@@ -91,16 +90,6 @@ export default async (req, context) => {
     if (!url) {
       await new Promise((r) => setTimeout(r, 1500));
       url = meetUrl(await getEvent(m.env, created.id));
-    }
-
-    // 担当者への通知メール(BOOKING_NOTIFY_EMAILS が空なら送らない)。
-    // 送れなくても予約はできているので、エラー名だけ記録して成功として返す
-    if (m.env.notifyEmails.length) {
-      try {
-        await sendMail(m.env, { to: m.env.notifyEmails, ...buildNotifyMail(v, slot, url) });
-      } catch (err) {
-        console.error('booking-notify failed:', err && err.message, err && err.status, (err && err.reason) || '');
-      }
     }
     return json(200, { ok: true, start: toIso(slot.start), end: toIso(slot.end), meetUrl: url });
   } catch (err) {
